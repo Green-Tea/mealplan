@@ -5,7 +5,7 @@ import { generateId } from '../utils/id';
 interface Props {
   ingredients: Ingredient[];
   onSave: (ingredients: Ingredient[]) => void;
-  dishes: { primaryProteinId: string; vegetableIds: string[] }[];
+  dishes: { primaryProteinId: string; vegetableIds: string[]; carbohydrateIds: string[]; otherIds: string[] }[];
 }
 
 export default function IngredientsPage({ ingredients, onSave, dishes }: Props) {
@@ -22,6 +22,8 @@ export default function IngredientsPage({ ingredients, onSave, dishes }: Props) 
     for (const d of dishes) {
       ids.add(d.primaryProteinId);
       d.vegetableIds.forEach(id => ids.add(id));
+      d.carbohydrateIds.forEach(id => ids.add(id));
+      d.otherIds.forEach(id => ids.add(id));
     }
     return ids;
   }, [dishes]);
@@ -36,6 +38,8 @@ export default function IngredientsPage({ ingredients, onSave, dishes }: Props) 
 
   const proteins = filtered.filter(i => i.category === 'Protein');
   const vegetables = filtered.filter(i => i.category === 'Vegetable');
+  const carbohydrates = filtered.filter(i => i.category === 'Carbohydrate');
+  const others = filtered.filter(i => i.category === 'Other');
 
   function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -125,6 +129,8 @@ export default function IngredientsPage({ ingredients, onSave, dishes }: Props) 
         <select value={category} onChange={e => setCategory(e.target.value as IngredientCategory)}>
           <option value="Protein">Protein</option>
           <option value="Vegetable">Vegetable</option>
+          <option value="Carbohydrate">Carbohydrate</option>
+          <option value="Other">Other</option>
         </select>
         <button className="btn" type="submit">Add</button>
       </form>
@@ -139,10 +145,14 @@ export default function IngredientsPage({ ingredients, onSave, dishes }: Props) 
           <option value="All">All</option>
           <option value="Protein">Protein</option>
           <option value="Vegetable">Vegetable</option>
+          <option value="Carbohydrate">Carbohydrate</option>
+          <option value="Other">Other</option>
         </select>
       </div>
       {renderGroup('Proteins', proteins)}
       {renderGroup('Vegetables', vegetables)}
+      {renderGroup('Carbohydrates', carbohydrates)}
+      {renderGroup('Others', others)}
       {filtered.length === 0 && <p className="empty-state">No ingredients found.</p>}
     </div>
   );

@@ -24,7 +24,11 @@ export function saveIngredients(ingredients: Ingredient[]): void {
 }
 
 export function loadDishes(): Dish[] {
-  return load<Dish>(KEYS.dishes);
+  return load<Dish>(KEYS.dishes).map(d => ({
+    ...d,
+    carbohydrateIds: d.carbohydrateIds ?? [],
+    otherIds: d.otherIds ?? [],
+  }));
 }
 
 export function saveDishes(dishes: Dish[]): void {

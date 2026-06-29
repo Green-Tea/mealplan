@@ -1,4 +1,4 @@
-export type IngredientCategory = 'Protein' | 'Vegetable';
+export type IngredientCategory = 'Protein' | 'Vegetable' | 'Carbohydrate' | 'Other';
 
 export interface Ingredient {
   id: string;
@@ -11,6 +11,8 @@ export interface Dish {
   name: string;
   primaryProteinId: string;
   vegetableIds: string[];
+  carbohydrateIds: string[];
+  otherIds: string[];
   notes?: string;
   tags?: string[];
 }
