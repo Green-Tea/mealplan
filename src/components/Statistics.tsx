@@ -20,7 +20,7 @@ export default function Statistics({ mealPlans, dishes, ingredients }: Props) {
     const now = new Date();
     const yearStart = `${now.getFullYear()}-01-01`;
 
-    const dishStats = new Map<string, { lastDate: string; countThisYear: number }>();
+    const dishStats = new Map<number, { lastDate: string; countThisYear: number }>();
 
     const sortedPlans = [...mealPlans].sort((a, b) => a.weekStartDate.localeCompare(b.weekStartDate));
 

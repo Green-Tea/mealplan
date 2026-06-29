@@ -10,10 +10,10 @@ interface Props {
 
 export default function GroceryList({ plan, dishes, ingredients }: Props) {
   const { proteins, vegetables, carbohydrates, others } = useMemo(() => {
-    const proteinCounts = new Map<string, number>();
-    const vegSet = new Set<string>();
-    const carbSet = new Set<string>();
-    const otherSet = new Set<string>();
+    const proteinCounts = new Map<number, number>();
+    const vegSet = new Set<number>();
+    const carbSet = new Set<number>();
+    const otherSet = new Set<number>();
 
     for (const day of WEEKDAYS) {
       const dishId = plan.slots[day];
@@ -32,7 +32,7 @@ export default function GroceryList({ plan, dishes, ingredients }: Props) {
       return { name: ing?.name ?? 'Unknown', count };
     }).sort((a, b) => a.name.localeCompare(b.name));
 
-    const toNames = (set: Set<string>) => Array.from(set).map(id => {
+    const toNames = (set: Set<number>) => Array.from(set).map(id => {
       const ing = ingredients.find(i => i.id === id);
       return ing?.name ?? 'Unknown';
     }).sort();

@@ -70,7 +70,6 @@ export default function App() {
             ingredients={ingredients}
             mealPlans={mealPlans}
             onSavePlans={setMealPlans}
-            onReload={reload}
           />
         )}
         {page === 'dishes' && (
