@@ -1,5 +1,5 @@
 import { useDroppable, useDraggable } from '@dnd-kit/core';
-import { Dish, Ingredient, Weekday } from '../types';
+import type { Dish, Ingredient, Weekday } from '../types';
 
 interface Props {
   day: Weekday;

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useDraggable } from '@dnd-kit/core';
-import { Dish, Ingredient } from '../types';
+import type { Dish, Ingredient } from '../types';
 
 function DraggableDish({ dish, ingredients }: { dish: Dish; ingredients: Ingredient[] }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({

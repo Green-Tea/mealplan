@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Ingredient, Dish, MealPlan } from './types';
+import type { Ingredient, Dish, MealPlan } from './types';
 import { loadIngredients, saveIngredients, loadDishes, saveDishes, loadMealPlans, saveMealPlans } from './store/storage';
 import IngredientsPage from './pages/IngredientsPage';
 import DishesPage from './pages/DishesPage';

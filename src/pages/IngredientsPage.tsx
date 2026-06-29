@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Ingredient, IngredientCategory } from '../types';
+import type { Ingredient, IngredientCategory } from '../types';
 import { generateId } from '../utils/id';
 
 interface Props {

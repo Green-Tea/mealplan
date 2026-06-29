@@ -1,15 +1,16 @@
 import { useState, useMemo } from 'react';
 import {
   DndContext,
-  DragEndEvent,
-  DragStartEvent,
+  type DragEndEvent,
+  type DragStartEvent,
   DragOverlay,
   PointerSensor,
   useSensor,
   useSensors,
   closestCenter,
 } from '@dnd-kit/core';
-import { Dish, Ingredient, MealPlan, Weekday, WEEKDAYS, WEEKDAY_LABELS } from '../types';
+import type { Dish, Ingredient, MealPlan, Weekday } from '../types';
+import { WEEKDAYS, WEEKDAY_LABELS } from '../types';
 import { addWeeks, formatWeekRange, getCurrentWeekStart } from '../utils/dates';
 import DaySlot from '../components/DaySlot';
 import DishPicker from '../components/DishPicker';
@@ -117,8 +118,7 @@ export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlan
     }
   }
 
-  const activeDish = activeDishId ? dishes.find(d => d.id === activeDishId || `planned-${WEEKDAYS.find(day => plan.slots[day] && `planned-${day}` === activeDishId)}` === activeDishId) : null;
-  const resolvedActiveDish = activeDishId
+const resolvedActiveDish = activeDishId
     ? (() => {
         const direct = dishes.find(d => d.id === activeDishId);
         if (direct) return direct;

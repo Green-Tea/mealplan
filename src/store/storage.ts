@@ -1,4 +1,4 @@
-import { Ingredient, Dish, MealPlan } from '../types';
+import type { Ingredient, Dish, MealPlan } from '../types';
 
 const KEYS = {
   ingredients: 'mealplan_ingredients',

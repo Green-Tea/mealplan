@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { Dish, Ingredient, MealPlan, WEEKDAYS, WEEKDAY_LABELS } from '../types';
+import type { Dish, Ingredient, MealPlan } from '../types';
+import { WEEKDAYS } from '../types';
 
 interface Props {
   mealPlans: MealPlan[];
