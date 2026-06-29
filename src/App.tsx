@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { Ingredient, Dish, MealPlan } from './types';
-import { loadIngredients, saveIngredients, loadDishes, saveDishes, loadMealPlans, saveMealPlans } from './store/storage';
+import { loadIngredients, loadDishes, loadMealPlans } from './store/storage';
 import IngredientsPage from './pages/IngredientsPage';
 import DishesPage from './pages/DishesPage';
 import PlannerPage from './pages/PlannerPage';
@@ -14,30 +14,16 @@ export default function App() {
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const reload = useCallback(async () => {
+    const [ing, d, mp] = await Promise.all([loadIngredients(), loadDishes(), loadMealPlans()]);
+    setIngredients(ing);
+    setDishes(d);
+    setMealPlans(mp);
+  }, []);
+
   useEffect(() => {
-    Promise.all([loadIngredients(), loadDishes(), loadMealPlans()])
-      .then(([ing, d, mp]) => {
-        setIngredients(ing);
-        setDishes(d);
-        setMealPlans(mp);
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  const handleSaveIngredients = useCallback((next: Ingredient[]) => {
-    setIngredients(next);
-    saveIngredients(next);
-  }, []);
-
-  const handleSaveDishes = useCallback((next: Dish[]) => {
-    setDishes(next);
-    saveDishes(next);
-  }, []);
-
-  const handleSavePlans = useCallback((next: MealPlan[]) => {
-    setMealPlans(next);
-    saveMealPlans(next);
-  }, []);
+    reload().finally(() => setLoading(false));
+  }, [reload]);
 
   if (loading) {
     return (
@@ -83,21 +69,22 @@ export default function App() {
             dishes={dishes}
             ingredients={ingredients}
             mealPlans={mealPlans}
-            onSavePlans={handleSavePlans}
+            onSavePlans={setMealPlans}
+            onReload={reload}
           />
         )}
         {page === 'dishes' && (
           <DishesPage
             dishes={dishes}
             ingredients={ingredients}
-            onSave={handleSaveDishes}
+            onUpdate={reload}
           />
         )}
         {page === 'ingredients' && (
           <IngredientsPage
             ingredients={ingredients}
-            onSave={handleSaveIngredients}
             dishes={dishes}
+            onUpdate={reload}
           />
         )}
       </main>

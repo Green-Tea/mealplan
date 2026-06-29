@@ -1,30 +1,30 @@
 export type IngredientCategory = 'Protein' | 'Vegetable' | 'Carbohydrate' | 'Other';
 
 export interface Ingredient {
-  id: string;
+  id: number;
   name: string;
   category: IngredientCategory;
 }
 
 export interface Dish {
-  id: string;
+  id: number;
   name: string;
-  proteinIds: string[];
-  vegetableIds: string[];
-  carbohydrateIds: string[];
-  otherIds: string[];
+  proteinIds: number[];
+  vegetableIds: number[];
+  carbohydrateIds: number[];
+  otherIds: number[];
   notes?: string;
   tags?: string[];
 }
 
 export interface MealPlan {
-  weekStartDate: string; // ISO date string of Monday
+  weekStartDate: string;
   slots: {
-    monday: string | null;
-    tuesday: string | null;
-    wednesday: string | null;
-    thursday: string | null;
-    friday: string | null;
+    monday: number | null;
+    tuesday: number | null;
+    wednesday: number | null;
+    thursday: number | null;
+    friday: number | null;
   };
 }
 

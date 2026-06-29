@@ -1,24 +1,24 @@
 import { useState, useMemo } from 'react';
 import type { Ingredient, IngredientCategory } from '../types';
-import { generateId } from '../utils/id';
+import { createIngredient, updateIngredient, deleteIngredient } from '../store/storage';
 
 interface Props {
   ingredients: Ingredient[];
-  onSave: (ingredients: Ingredient[]) => void;
-  dishes: { proteinIds: string[]; vegetableIds: string[]; carbohydrateIds: string[]; otherIds: string[] }[];
+  dishes: { proteinIds: number[]; vegetableIds: number[]; carbohydrateIds: number[]; otherIds: number[] }[];
+  onUpdate: () => Promise<void>;
 }
 
-export default function IngredientsPage({ ingredients, onSave, dishes }: Props) {
+export default function IngredientsPage({ ingredients, dishes, onUpdate }: Props) {
   const [name, setName] = useState('');
   const [category, setCategory] = useState<IngredientCategory>('Protein');
   const [search, setSearch] = useState('');
   const [filterCat, setFilterCat] = useState<IngredientCategory | 'All'>('All');
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState('');
   const [editCategory, setEditCategory] = useState<IngredientCategory>('Protein');
 
   const usedIngredientIds = useMemo(() => {
-    const ids = new Set<string>();
+    const ids = new Set<number>();
     for (const d of dishes) {
       d.proteinIds.forEach(id => ids.add(id));
       d.vegetableIds.forEach(id => ids.add(id));
@@ -41,7 +41,7 @@ export default function IngredientsPage({ ingredients, onSave, dishes }: Props) 
   const carbohydrates = filtered.filter(i => i.category === 'Carbohydrate');
   const others = filtered.filter(i => i.category === 'Other');
 
-  function handleAdd(e: React.FormEvent) {
+  async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     const trimmed = name.trim();
     if (!trimmed) return;
@@ -49,16 +49,18 @@ export default function IngredientsPage({ ingredients, onSave, dishes }: Props) 
       alert('An ingredient with this name already exists.');
       return;
     }
-    onSave([...ingredients, { id: generateId(), name: trimmed, category }]);
+    await createIngredient({ name: trimmed, category });
     setName('');
+    await onUpdate();
   }
 
-  function handleDelete(id: string) {
+  async function handleDelete(id: number) {
     if (usedIngredientIds.has(id)) {
       alert('Cannot delete: this ingredient is used by one or more dishes.');
       return;
     }
-    onSave(ingredients.filter(i => i.id !== id));
+    await deleteIngredient(id);
+    await onUpdate();
   }
 
   function startEdit(ingredient: Ingredient) {
@@ -67,15 +69,16 @@ export default function IngredientsPage({ ingredients, onSave, dishes }: Props) 
     setEditCategory(ingredient.category);
   }
 
-  function handleEditSave(id: string) {
+  async function handleEditSave(id: number) {
     const trimmed = editName.trim();
     if (!trimmed) return;
     if (ingredients.some(i => i.id !== id && i.name.toLowerCase() === trimmed.toLowerCase())) {
       alert('An ingredient with this name already exists.');
       return;
     }
-    onSave(ingredients.map(i => i.id === id ? { ...i, name: trimmed, category: editCategory } : i));
+    await updateIngredient({ id, name: trimmed, category: editCategory });
     setEditingId(null);
+    await onUpdate();
   }
 
   function renderGroup(title: string, items: Ingredient[]) {
@@ -97,6 +100,8 @@ export default function IngredientsPage({ ingredients, onSave, dishes }: Props) 
                   <select value={editCategory} onChange={e => setEditCategory(e.target.value as IngredientCategory)}>
                     <option value="Protein">Protein</option>
                     <option value="Vegetable">Vegetable</option>
+                    <option value="Carbohydrate">Carbohydrate</option>
+                    <option value="Other">Other</option>
                   </select>
                   <button className="btn btn-sm" onClick={() => handleEditSave(ingredient.id)}>Save</button>
                   <button className="btn btn-sm btn-ghost" onClick={() => setEditingId(null)}>Cancel</button>
