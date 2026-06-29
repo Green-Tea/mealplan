@@ -300,9 +300,9 @@ body {
 }
 
 .checkbox-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
 }
 
 .checkbox-label {
