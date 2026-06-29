@@ -15,6 +15,8 @@ export default function DishesPage({ dishes, ingredients, onSave }: Props) {
 
   const proteins = ingredients.filter(i => i.category === 'Protein');
   const vegetables = ingredients.filter(i => i.category === 'Vegetable');
+  const carbohydrates = ingredients.filter(i => i.category === 'Carbohydrate');
+  const others = ingredients.filter(i => i.category === 'Other');
 
   const filtered = useMemo(() => {
     if (!search) return dishes;
@@ -68,6 +70,8 @@ export default function DishesPage({ dishes, ingredients, onSave }: Props) {
           dish={editingDish}
           proteins={proteins}
           vegetables={vegetables}
+          carbohydrates={carbohydrates}
+          others={others}
           existingDishes={dishes}
           onSave={(dish) => {
             if (editingDish) {
@@ -112,10 +116,12 @@ export default function DishesPage({ dishes, ingredients, onSave }: Props) {
   );
 }
 
-function DishForm({ dish, proteins, vegetables, existingDishes, onSave, onCancel }: {
+function DishForm({ dish, proteins, vegetables, carbohydrates, others, existingDishes, onSave, onCancel }: {
   dish: Dish | null;
   proteins: Ingredient[];
   vegetables: Ingredient[];
+  carbohydrates: Ingredient[];
+  others: Ingredient[];
   existingDishes: Dish[];
   onSave: (dish: Dish) => void;
   onCancel: () => void;
@@ -123,6 +129,8 @@ function DishForm({ dish, proteins, vegetables, existingDishes, onSave, onCancel
   const [name, setName] = useState(dish?.name ?? '');
   const [proteinId, setProteinId] = useState(dish?.primaryProteinId ?? (proteins[0]?.id ?? ''));
   const [vegIds, setVegIds] = useState<Set<string>>(new Set(dish?.vegetableIds ?? []));
+  const [carbIds, setCarbIds] = useState<Set<string>>(new Set(dish?.carbohydrateIds ?? []));
+  const [otherIds, setOtherIds] = useState<Set<string>>(new Set(dish?.otherIds ?? []));
   const [notes, setNotes] = useState(dish?.notes ?? '');
   const [tagInput, setTagInput] = useState(dish?.tags?.join(', ') ?? '');
 
@@ -144,6 +152,8 @@ function DishForm({ dish, proteins, vegetables, existingDishes, onSave, onCancel
       name: trimmed,
       primaryProteinId: proteinId,
       vegetableIds: Array.from(vegIds),
+      carbohydrateIds: Array.from(carbIds),
+      otherIds: Array.from(otherIds),
       notes: notes.trim() || undefined,
       tags: tags.length > 0 ? tags : undefined,
     });
@@ -154,6 +164,20 @@ function DishForm({ dish, proteins, vegetables, existingDishes, onSave, onCancel
     if (next.has(id)) next.delete(id);
     else next.add(id);
     setVegIds(next);
+  }
+
+  function toggleCarb(id: string) {
+    const next = new Set(carbIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setCarbIds(next);
+  }
+
+  function toggleOther(id: string) {
+    const next = new Set(otherIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setOtherIds(next);
   }
 
   return (
@@ -187,6 +211,44 @@ function DishForm({ dish, proteins, vegetables, existingDishes, onSave, onCancel
                   onChange={() => toggleVeg(v.id)}
                 />
                 {v.name}
+              </label>
+            ))}
+          </div>
+        )}
+      </fieldset>
+      <fieldset className="veg-fieldset">
+        <legend>Carbohydrates</legend>
+        {carbohydrates.length === 0 ? (
+          <p className="form-hint">Add carbohydrates on the Ingredients page first.</p>
+        ) : (
+          <div className="checkbox-grid">
+            {carbohydrates.map(c => (
+              <label key={c.id} className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={carbIds.has(c.id)}
+                  onChange={() => toggleCarb(c.id)}
+                />
+                {c.name}
+              </label>
+            ))}
+          </div>
+        )}
+      </fieldset>
+      <fieldset className="veg-fieldset">
+        <legend>Others</legend>
+        {others.length === 0 ? (
+          <p className="form-hint">Add other ingredients on the Ingredients page first.</p>
+        ) : (
+          <div className="checkbox-grid">
+            {others.map(o => (
+              <label key={o.id} className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={otherIds.has(o.id)}
+                  onChange={() => toggleOther(o.id)}
+                />
+                {o.name}
               </label>
             ))}
           </div>

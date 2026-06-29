@@ -261,6 +261,12 @@ body {
   font-weight: 500;
 }
 
+.dish-form .checkbox-label {
+  display: flex;
+  margin-bottom: 0;
+  font-weight: normal;
+}
+
 .dish-form input,
 .dish-form select,
 .dish-form textarea {

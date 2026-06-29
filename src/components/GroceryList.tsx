@@ -9,9 +9,11 @@ interface Props {
 }
 
 export default function GroceryList({ plan, dishes, ingredients }: Props) {
-  const { proteins, vegetables } = useMemo(() => {
+  const { proteins, vegetables, carbohydrates, others } = useMemo(() => {
     const proteinCounts = new Map<string, number>();
     const vegSet = new Set<string>();
+    const carbSet = new Set<string>();
+    const otherSet = new Set<string>();
 
     for (const day of WEEKDAYS) {
       const dishId = plan.slots[day];
@@ -21,6 +23,8 @@ export default function GroceryList({ plan, dishes, ingredients }: Props) {
 
       proteinCounts.set(dish.primaryProteinId, (proteinCounts.get(dish.primaryProteinId) ?? 0) + 1);
       dish.vegetableIds.forEach(id => vegSet.add(id));
+      dish.carbohydrateIds?.forEach(id => carbSet.add(id));
+      dish.otherIds?.forEach(id => otherSet.add(id));
     }
 
     const proteins = Array.from(proteinCounts.entries()).map(([id, count]) => {
@@ -28,15 +32,15 @@ export default function GroceryList({ plan, dishes, ingredients }: Props) {
       return { name: ing?.name ?? 'Unknown', count };
     }).sort((a, b) => a.name.localeCompare(b.name));
 
-    const vegetables = Array.from(vegSet).map(id => {
+    const toNames = (set: Set<string>) => Array.from(set).map(id => {
       const ing = ingredients.find(i => i.id === id);
       return ing?.name ?? 'Unknown';
     }).sort();
 
-    return { proteins, vegetables };
+    return { proteins, vegetables: toNames(vegSet), carbohydrates: toNames(carbSet), others: toNames(otherSet) };
   }, [plan, dishes, ingredients]);
 
-  if (proteins.length === 0 && vegetables.length === 0) {
+  if (proteins.length === 0 && vegetables.length === 0 && carbohydrates.length === 0 && others.length === 0) {
     return (
       <div className="grocery-list">
         <h3>Grocery List</h3>
@@ -65,6 +69,26 @@ export default function GroceryList({ plan, dishes, ingredients }: Props) {
             ))}
           </ul>
         </div>
+        {carbohydrates.length > 0 && (
+          <div className="grocery-section">
+            <h4>Carbohydrates</h4>
+            <ul>
+              {carbohydrates.map(c => (
+                <li key={c}>{c}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {others.length > 0 && (
+          <div className="grocery-section">
+            <h4>Others</h4>
+            <ul>
+              {others.map(o => (
+                <li key={o}>{o}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
