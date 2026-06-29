@@ -2,41 +2,41 @@ import type { Ingredient, Dish, MealPlan } from '../types';
 
 const API = '/api';
 
-export async function loadIngredients(): Promise<Ingredient[]> {
-  const res = await fetch(`${API}/ingredients`);
+async function request<T>(url: string, method: string = 'GET', body?: unknown): Promise<T> {
+  const res = await fetch(url, {
+    method,
+    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
+  });
   return res.json();
 }
 
-export async function saveIngredients(ingredients: Ingredient[]): Promise<void> {
-  await fetch(`${API}/ingredients`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(ingredients),
-  });
-}
+// Ingredients
+export const loadIngredients = () => request<Ingredient[]>(`${API}/ingredients`);
 
-export async function loadDishes(): Promise<Dish[]> {
-  const res = await fetch(`${API}/dishes`);
-  return res.json();
-}
+export const createIngredient = (data: Omit<Ingredient, 'id'>) =>
+  request<{ id: number }>(`${API}/ingredients`, 'POST', data);
 
-export async function saveDishes(dishes: Dish[]): Promise<void> {
-  await fetch(`${API}/dishes`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(dishes),
-  });
-}
+export const updateIngredient = (data: Ingredient) =>
+  request(`${API}/ingredients`, 'PUT', data);
 
-export async function loadMealPlans(): Promise<MealPlan[]> {
-  const res = await fetch(`${API}/meal-plans`);
-  return res.json();
-}
+export const deleteIngredient = (id: number) =>
+  request(`${API}/ingredients`, 'DELETE', { id });
 
-export async function saveMealPlans(plans: MealPlan[]): Promise<void> {
-  await fetch(`${API}/meal-plans`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(plans),
-  });
-}
+// Dishes
+export const loadDishes = () => request<Dish[]>(`${API}/dishes`);
+
+export const createDish = (data: Omit<Dish, 'id'>) =>
+  request<{ id: number }>(`${API}/dishes`, 'POST', data);
+
+export const updateDish = (data: Dish) =>
+  request(`${API}/dishes`, 'PUT', data);
+
+export const deleteDish = (id: number) =>
+  request(`${API}/dishes`, 'DELETE', { id });
+
+// Meal Plans
+export const loadMealPlans = () => request<MealPlan[]>(`${API}/meal-plans`);
+
+export const saveMealPlan = (plan: MealPlan) =>
+  request(`${API}/meal-plans`, 'PUT', plan);

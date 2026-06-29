@@ -3,15 +3,22 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
   return Response.json(results);
 };
 
+export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
+  const { name, category }: { name: string; category: string } = await request.json();
+  const result = await env.DB.prepare('INSERT INTO ingredients (name, category) VALUES (?1, ?2)')
+    .bind(name, category).run();
+  return Response.json({ id: result.meta.last_row_id });
+};
+
 export const onRequestPut: PagesFunction<Env> = async ({ request, env }) => {
-  const ingredients: { id: string; name: string; category: string }[] = await request.json();
+  const { id, name, category }: { id: number; name: string; category: string } = await request.json();
+  await env.DB.prepare('UPDATE ingredients SET name = ?1, category = ?2 WHERE id = ?3')
+    .bind(name, category, id).run();
+  return Response.json({ ok: true });
+};
 
-  await env.DB.batch([
-    env.DB.prepare('DELETE FROM ingredients WHERE id NOT IN (SELECT value FROM json_each(?1))').bind(JSON.stringify(ingredients.map(i => i.id))),
-    ...ingredients.map(i =>
-      env.DB.prepare('INSERT OR REPLACE INTO ingredients (id, name, category) VALUES (?1, ?2, ?3)').bind(i.id, i.name, i.category)
-    ),
-  ]);
-
+export const onRequestDelete: PagesFunction<Env> = async ({ request, env }) => {
+  const { id }: { id: number } = await request.json();
+  await env.DB.prepare('DELETE FROM ingredients WHERE id = ?1').bind(id).run();
   return Response.json({ ok: true });
 };

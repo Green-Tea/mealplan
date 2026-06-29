@@ -1,14 +1,14 @@
 import { useState, useMemo } from 'react';
 import type { Dish, Ingredient } from '../types';
-import { generateId } from '../utils/id';
+import { createDish, updateDish, deleteDish } from '../store/storage';
 
 interface Props {
   dishes: Dish[];
   ingredients: Ingredient[];
-  onSave: (dishes: Dish[]) => void;
+  onUpdate: () => Promise<void>;
 }
 
-export default function DishesPage({ dishes, ingredients, onSave }: Props) {
+export default function DishesPage({ dishes, ingredients, onUpdate }: Props) {
   const [search, setSearch] = useState('');
   const [editingDish, setEditingDish] = useState<Dish | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -29,8 +29,9 @@ export default function DishesPage({ dishes, ingredients, onSave }: Props) {
     });
   }, [dishes, search, ingredients]);
 
-  function handleDelete(id: string) {
-    onSave(dishes.filter(d => d.id !== id));
+  async function handleDelete(id: number) {
+    await deleteDish(id);
+    await onUpdate();
   }
 
   function handleEdit(dish: Dish) {
@@ -43,11 +44,11 @@ export default function DishesPage({ dishes, ingredients, onSave }: Props) {
     setShowForm(true);
   }
 
-  function getProteinNames(ids: string[]): string {
+  function getProteinNames(ids: number[]): string {
     return ids.map(id => ingredients.find(i => i.id === id)?.name ?? 'Unknown').join(', ');
   }
 
-  function getVegetableNames(ids: string[]): string {
+  function getVegetableNames(ids: number[]): string {
     return ids.map(id => ingredients.find(i => i.id === id)?.name ?? 'Unknown').join(', ');
   }
 
@@ -72,14 +73,15 @@ export default function DishesPage({ dishes, ingredients, onSave }: Props) {
           carbohydrates={carbohydrates}
           others={others}
           existingDishes={dishes}
-          onSave={(dish) => {
+          onSave={async (dish) => {
             if (editingDish) {
-              onSave(dishes.map(d => d.id === dish.id ? dish : d));
+              await updateDish(dish as Dish);
             } else {
-              onSave([...dishes, dish]);
+              await createDish(dish as Omit<Dish, 'id'>);
             }
             setShowForm(false);
             setEditingDish(null);
+            await onUpdate();
           }}
           onCancel={() => { setShowForm(false); setEditingDish(null); }}
         />
@@ -124,14 +126,14 @@ function DishForm({ dish, proteins, vegetables, carbohydrates, others, existingD
   carbohydrates: Ingredient[];
   others: Ingredient[];
   existingDishes: Dish[];
-  onSave: (dish: Dish) => void;
+  onSave: (dish: Dish | Omit<Dish, 'id'>) => void;
   onCancel: () => void;
 }) {
   const [name, setName] = useState(dish?.name ?? '');
-  const [proteinIds, setProteinIds] = useState<Set<string>>(new Set(dish?.proteinIds ?? []));
-  const [vegIds, setVegIds] = useState<Set<string>>(new Set(dish?.vegetableIds ?? []));
-  const [carbIds, setCarbIds] = useState<Set<string>>(new Set(dish?.carbohydrateIds ?? []));
-  const [otherIds, setOtherIds] = useState<Set<string>>(new Set(dish?.otherIds ?? []));
+  const [proteinIds, setProteinIds] = useState<Set<number>>(new Set(dish?.proteinIds ?? []));
+  const [vegIds, setVegIds] = useState<Set<number>>(new Set(dish?.vegetableIds ?? []));
+  const [carbIds, setCarbIds] = useState<Set<number>>(new Set(dish?.carbohydrateIds ?? []));
+  const [otherIds, setOtherIds] = useState<Set<number>>(new Set(dish?.otherIds ?? []));
   const [notes, setNotes] = useState(dish?.notes ?? '');
   const [tagInput, setTagInput] = useState(dish?.tags?.join(', ') ?? '');
 
@@ -144,8 +146,7 @@ function DishForm({ dish, proteins, vegetables, carbohydrates, others, existingD
       return;
     }
     const tags = tagInput.split(',').map(t => t.trim()).filter(Boolean);
-    onSave({
-      id: dish?.id ?? generateId(),
+    const data = {
       name: trimmed,
       proteinIds: Array.from(proteinIds),
       vegetableIds: Array.from(vegIds),
@@ -153,35 +154,43 @@ function DishForm({ dish, proteins, vegetables, carbohydrates, others, existingD
       otherIds: Array.from(otherIds),
       notes: notes.trim() || undefined,
       tags: tags.length > 0 ? tags : undefined,
-    });
+    };
+    if (dish) {
+      onSave({ id: dish.id, ...data });
+    } else {
+      onSave(data);
+    }
   }
 
-  function toggleProtein(id: string) {
-    const next = new Set(proteinIds);
+  function toggle(set: Set<number>, setFn: (s: Set<number>) => void, id: number) {
+    const next = new Set(set);
     if (next.has(id)) next.delete(id);
     else next.add(id);
-    setProteinIds(next);
+    setFn(next);
   }
 
-  function toggleVeg(id: string) {
-    const next = new Set(vegIds);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setVegIds(next);
-  }
-
-  function toggleCarb(id: string) {
-    const next = new Set(carbIds);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setCarbIds(next);
-  }
-
-  function toggleOther(id: string) {
-    const next = new Set(otherIds);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setOtherIds(next);
+  function renderCheckboxGroup(legend: string, items: Ingredient[], selected: Set<number>, setSelected: (s: Set<number>) => void, emptyHint: string) {
+    return (
+      <fieldset className="veg-fieldset">
+        <legend>{legend}</legend>
+        {items.length === 0 ? (
+          <p className="form-hint">{emptyHint}</p>
+        ) : (
+          <div className="checkbox-grid">
+            {items.map(item => (
+              <label key={item.id} className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={selected.has(item.id)}
+                  onChange={() => toggle(selected, setSelected, item.id)}
+                />
+                {item.name}
+              </label>
+            ))}
+          </div>
+        )}
+      </fieldset>
+    );
   }
 
   return (
@@ -191,82 +200,10 @@ function DishForm({ dish, proteins, vegetables, carbohydrates, others, existingD
         Name
         <input value={name} onChange={e => setName(e.target.value)} placeholder="Dish name" autoFocus required />
       </label>
-      <fieldset className="veg-fieldset">
-        <legend>Proteins</legend>
-        {proteins.length === 0 ? (
-          <p className="form-hint">Add proteins on the Ingredients page first.</p>
-        ) : (
-          <div className="checkbox-grid">
-            {proteins.map(p => (
-              <label key={p.id} className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={proteinIds.has(p.id)}
-                  onChange={() => toggleProtein(p.id)}
-                />
-                {p.name}
-              </label>
-            ))}
-          </div>
-        )}
-      </fieldset>
-      <fieldset className="veg-fieldset">
-        <legend>Vegetables</legend>
-        {vegetables.length === 0 ? (
-          <p className="form-hint">Add vegetables on the Ingredients page first.</p>
-        ) : (
-          <div className="checkbox-grid">
-            {vegetables.map(v => (
-              <label key={v.id} className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={vegIds.has(v.id)}
-                  onChange={() => toggleVeg(v.id)}
-                />
-                {v.name}
-              </label>
-            ))}
-          </div>
-        )}
-      </fieldset>
-      <fieldset className="veg-fieldset">
-        <legend>Carbohydrates</legend>
-        {carbohydrates.length === 0 ? (
-          <p className="form-hint">Add carbohydrates on the Ingredients page first.</p>
-        ) : (
-          <div className="checkbox-grid">
-            {carbohydrates.map(c => (
-              <label key={c.id} className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={carbIds.has(c.id)}
-                  onChange={() => toggleCarb(c.id)}
-                />
-                {c.name}
-              </label>
-            ))}
-          </div>
-        )}
-      </fieldset>
-      <fieldset className="veg-fieldset">
-        <legend>Others</legend>
-        {others.length === 0 ? (
-          <p className="form-hint">Add other ingredients on the Ingredients page first.</p>
-        ) : (
-          <div className="checkbox-grid">
-            {others.map(o => (
-              <label key={o.id} className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={otherIds.has(o.id)}
-                  onChange={() => toggleOther(o.id)}
-                />
-                {o.name}
-              </label>
-            ))}
-          </div>
-        )}
-      </fieldset>
+      {renderCheckboxGroup('Proteins', proteins, proteinIds, setProteinIds, 'Add proteins on the Ingredients page first.')}
+      {renderCheckboxGroup('Vegetables', vegetables, vegIds, setVegIds, 'Add vegetables on the Ingredients page first.')}
+      {renderCheckboxGroup('Carbohydrates', carbohydrates, carbIds, setCarbIds, 'Add carbohydrates on the Ingredients page first.')}
+      {renderCheckboxGroup('Others', others, otherIds, setOtherIds, 'Add other ingredients on the Ingredients page first.')}
       <label>
         Notes <span className="optional">(optional)</span>
         <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Any notes..." rows={2} />

@@ -12,6 +12,7 @@ import {
 import type { Dish, Ingredient, MealPlan, Weekday } from '../types';
 import { WEEKDAYS, WEEKDAY_LABELS } from '../types';
 import { addWeeks, formatWeekRange, getCurrentWeekStart } from '../utils/dates';
+import { saveMealPlan } from '../store/storage';
 import DaySlot from '../components/DaySlot';
 import DishPicker from '../components/DishPicker';
 import GroceryList from '../components/GroceryList';
@@ -22,6 +23,7 @@ interface Props {
   ingredients: Ingredient[];
   mealPlans: MealPlan[];
   onSavePlans: (plans: MealPlan[]) => void;
+  onReload: () => Promise<void>;
 }
 
 function getOrCreatePlan(plans: MealPlan[], weekStart: string): MealPlan {
@@ -33,7 +35,7 @@ function getOrCreatePlan(plans: MealPlan[], weekStart: string): MealPlan {
   };
 }
 
-export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlans }: Props) {
+export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlans, onReload }: Props) {
   const [weekStart, setWeekStart] = useState(getCurrentWeekStart);
   const [showGrocery, setShowGrocery] = useState(false);
   const [showStats, setShowStats] = useState(false);
@@ -45,7 +47,7 @@ export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlan
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
-  function savePlan(updated: MealPlan) {
+  function persistPlan(updated: MealPlan) {
     const idx = mealPlans.findIndex(p => p.weekStartDate === updated.weekStartDate);
     if (idx >= 0) {
       const next = [...mealPlans];
@@ -54,10 +56,11 @@ export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlan
     } else {
       onSavePlans([...mealPlans, updated]);
     }
+    saveMealPlan(updated);
   }
 
-  function assignDish(day: Weekday, dishId: string | null) {
-    savePlan({ ...plan, slots: { ...plan.slots, [day]: dishId } });
+  function assignDish(day: Weekday, dishId: number | null) {
+    persistPlan({ ...plan, slots: { ...plan.slots, [day]: dishId } });
   }
 
   function clearDay(day: Weekday) {
@@ -82,7 +85,7 @@ export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlan
       alert('No meal plan found for the previous week.');
       return;
     }
-    savePlan({ ...plan, slots: { ...prevPlan.slots } });
+    persistPlan({ ...plan, slots: { ...prevPlan.slots } });
   }
 
   function handleDragStart(event: DragStartEvent) {
@@ -104,7 +107,7 @@ export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlan
       if (sourceDay) {
         const sourceDish = plan.slots[sourceDay];
         const targetDish = plan.slots[targetDay];
-        savePlan({
+        persistPlan({
           ...plan,
           slots: {
             ...plan.slots,
@@ -113,15 +116,18 @@ export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlan
           },
         });
       } else {
-        assignDish(targetDay, dragId);
+        assignDish(targetDay, Number(dragId));
       }
     }
   }
 
-const resolvedActiveDish = activeDishId
+  const resolvedActiveDish = activeDishId
     ? (() => {
-        const direct = dishes.find(d => d.id === activeDishId);
-        if (direct) return direct;
+        const numId = Number(activeDishId);
+        if (!isNaN(numId)) {
+          const direct = dishes.find(d => d.id === numId);
+          if (direct) return direct;
+        }
         const day = WEEKDAYS.find(d => `planned-${d}` === activeDishId);
         if (day && plan.slots[day]) return dishes.find(d => d.id === plan.slots[day]!);
         return null;
