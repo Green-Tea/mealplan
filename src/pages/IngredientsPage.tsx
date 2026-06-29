@@ -5,7 +5,7 @@ import { generateId } from '../utils/id';
 interface Props {
   ingredients: Ingredient[];
   onSave: (ingredients: Ingredient[]) => void;
-  dishes: { primaryProteinId: string; vegetableIds: string[]; carbohydrateIds: string[]; otherIds: string[] }[];
+  dishes: { proteinIds: string[]; vegetableIds: string[]; carbohydrateIds: string[]; otherIds: string[] }[];
 }
 
 export default function IngredientsPage({ ingredients, onSave, dishes }: Props) {
@@ -20,7 +20,7 @@ export default function IngredientsPage({ ingredients, onSave, dishes }: Props) 
   const usedIngredientIds = useMemo(() => {
     const ids = new Set<string>();
     for (const d of dishes) {
-      ids.add(d.primaryProteinId);
+      d.proteinIds.forEach(id => ids.add(id));
       d.vegetableIds.forEach(id => ids.add(id));
       d.carbohydrateIds.forEach(id => ids.add(id));
       d.otherIds.forEach(id => ids.add(id));

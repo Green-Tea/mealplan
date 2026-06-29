@@ -25,14 +25,14 @@ function DraggableDishCard({ day, dish, ingredients, onClear, onDuplicate }: {
     ? { transform: `translate(${transform.x}px, ${transform.y}px)`, opacity: isDragging ? 0.5 : 1 }
     : undefined;
 
-  const protein = ingredients.find(i => i.id === dish.primaryProteinId);
+  const proteinNames = dish.proteinIds?.map(id => ingredients.find(i => i.id === id)?.name).filter(Boolean);
   const vegs = dish.vegetableIds.map(id => ingredients.find(i => i.id === id)?.name).filter(Boolean);
 
   return (
     <div ref={setNodeRef} style={style} className="planned-dish" {...attributes} {...listeners}>
       <div className="planned-dish-name">{dish.name}</div>
       <div className="planned-dish-details">
-        {protein && <span className="mini-protein">{protein.name}</span>}
+        {proteinNames && proteinNames.length > 0 && <span className="mini-protein">{proteinNames.join(', ')}</span>}
         {vegs.length > 0 && <span className="mini-vegs">{vegs.join(', ')}</span>}
       </div>
       <div className="planned-dish-actions" onPointerDown={e => e.stopPropagation()}>

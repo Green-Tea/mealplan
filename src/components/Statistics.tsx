@@ -43,10 +43,12 @@ export default function Statistics({ mealPlans, dishes, ingredients }: Props) {
     const result: DishStat[] = [];
     for (const dish of dishes) {
       const entry = dishStats.get(dish.id);
-      const protein = ingredients.find(i => i.id === dish.primaryProteinId);
+      const proteinName = dish.proteinIds
+        ?.map(id => ingredients.find(i => i.id === id)?.name ?? 'Unknown')
+        .join(', ') || 'None';
       result.push({
         dish,
-        proteinName: protein?.name ?? 'Unknown',
+        proteinName,
         lastCooked: entry?.lastDate ?? 'Never',
         timesThisYear: entry?.countThisYear ?? 0,
       });

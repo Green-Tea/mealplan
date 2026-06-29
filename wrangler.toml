@@ -1,0 +1,8 @@
+name = "mealplan"
+compatibility_date = "2025-06-01"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "mealplan"
+database_id = "f2265d3c-8514-4d32-82c1-dd44abff985b"
