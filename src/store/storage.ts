@@ -24,11 +24,15 @@ export function saveIngredients(ingredients: Ingredient[]): void {
 }
 
 export function loadDishes(): Dish[] {
-  return load<Dish>(KEYS.dishes).map(d => ({
-    ...d,
-    carbohydrateIds: d.carbohydrateIds ?? [],
-    otherIds: d.otherIds ?? [],
-  }));
+  return load<Dish & { primaryProteinId?: string }>(KEYS.dishes).map(d => {
+    const { primaryProteinId, ...rest } = d;
+    return {
+      ...rest,
+      proteinIds: rest.proteinIds ?? (primaryProteinId ? [primaryProteinId] : []),
+      carbohydrateIds: d.carbohydrateIds ?? [],
+      otherIds: d.otherIds ?? [],
+    };
+  });
 }
 
 export function saveDishes(dishes: Dish[]): void {

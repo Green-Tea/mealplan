@@ -23,8 +23,7 @@ export default function DishesPage({ dishes, ingredients, onSave }: Props) {
     const q = search.toLowerCase();
     return dishes.filter(d => {
       if (d.name.toLowerCase().includes(q)) return true;
-      const protein = ingredients.find(i => i.id === d.primaryProteinId);
-      if (protein?.name.toLowerCase().includes(q)) return true;
+      if (d.proteinIds.some(pid => ingredients.find(i => i.id === pid)?.name.toLowerCase().includes(q))) return true;
       if (d.tags?.some(t => t.toLowerCase().includes(q))) return true;
       return false;
     });
@@ -35,7 +34,7 @@ export default function DishesPage({ dishes, ingredients, onSave }: Props) {
   }
 
   function handleEdit(dish: Dish) {
-    setEditingDish({ ...dish, vegetableIds: [...dish.vegetableIds], tags: dish.tags ? [...dish.tags] : [] });
+    setEditingDish({ ...dish, proteinIds: [...dish.proteinIds], vegetableIds: [...dish.vegetableIds], tags: dish.tags ? [...dish.tags] : [] });
     setShowForm(true);
   }
 
@@ -44,8 +43,8 @@ export default function DishesPage({ dishes, ingredients, onSave }: Props) {
     setShowForm(true);
   }
 
-  function getProteinName(id: string): string {
-    return ingredients.find(i => i.id === id)?.name ?? 'Unknown';
+  function getProteinNames(ids: string[]): string {
+    return ids.map(id => ingredients.find(i => i.id === id)?.name ?? 'Unknown').join(', ');
   }
 
   function getVegetableNames(ids: string[]): string {
@@ -97,7 +96,9 @@ export default function DishesPage({ dishes, ingredients, onSave }: Props) {
               </div>
             </div>
             <div className="dish-details">
-              <span className="dish-protein">🥩 {getProteinName(dish.primaryProteinId)}</span>
+              {dish.proteinIds.length > 0 && (
+                <span className="dish-protein">🥩 {getProteinNames(dish.proteinIds)}</span>
+              )}
               {dish.vegetableIds.length > 0 && (
                 <span className="dish-vegs">🥬 {getVegetableNames(dish.vegetableIds)}</span>
               )}
@@ -127,7 +128,7 @@ function DishForm({ dish, proteins, vegetables, carbohydrates, others, existingD
   onCancel: () => void;
 }) {
   const [name, setName] = useState(dish?.name ?? '');
-  const [proteinId, setProteinId] = useState(dish?.primaryProteinId ?? (proteins[0]?.id ?? ''));
+  const [proteinIds, setProteinIds] = useState<Set<string>>(new Set(dish?.proteinIds ?? []));
   const [vegIds, setVegIds] = useState<Set<string>>(new Set(dish?.vegetableIds ?? []));
   const [carbIds, setCarbIds] = useState<Set<string>>(new Set(dish?.carbohydrateIds ?? []));
   const [otherIds, setOtherIds] = useState<Set<string>>(new Set(dish?.otherIds ?? []));
@@ -138,10 +139,6 @@ function DishForm({ dish, proteins, vegetables, carbohydrates, others, existingD
     e.preventDefault();
     const trimmed = name.trim();
     if (!trimmed) return;
-    if (!proteinId) {
-      alert('Please select a primary protein.');
-      return;
-    }
     if (existingDishes.some(d => d.id !== dish?.id && d.name.toLowerCase() === trimmed.toLowerCase())) {
       alert('A dish with this name already exists.');
       return;
@@ -150,13 +147,20 @@ function DishForm({ dish, proteins, vegetables, carbohydrates, others, existingD
     onSave({
       id: dish?.id ?? generateId(),
       name: trimmed,
-      primaryProteinId: proteinId,
+      proteinIds: Array.from(proteinIds),
       vegetableIds: Array.from(vegIds),
       carbohydrateIds: Array.from(carbIds),
       otherIds: Array.from(otherIds),
       notes: notes.trim() || undefined,
       tags: tags.length > 0 ? tags : undefined,
     });
+  }
+
+  function toggleProtein(id: string) {
+    const next = new Set(proteinIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setProteinIds(next);
   }
 
   function toggleVeg(id: string) {
@@ -187,16 +191,25 @@ function DishForm({ dish, proteins, vegetables, carbohydrates, others, existingD
         Name
         <input value={name} onChange={e => setName(e.target.value)} placeholder="Dish name" autoFocus required />
       </label>
-      <label>
-        Primary Protein
+      <fieldset className="veg-fieldset">
+        <legend>Proteins</legend>
         {proteins.length === 0 ? (
           <p className="form-hint">Add proteins on the Ingredients page first.</p>
         ) : (
-          <select value={proteinId} onChange={e => setProteinId(e.target.value)}>
-            {proteins.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
+          <div className="checkbox-grid">
+            {proteins.map(p => (
+              <label key={p.id} className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={proteinIds.has(p.id)}
+                  onChange={() => toggleProtein(p.id)}
+                />
+                {p.name}
+              </label>
+            ))}
+          </div>
         )}
-      </label>
+      </fieldset>
       <fieldset className="veg-fieldset">
         <legend>Vegetables</legend>
         {vegetables.length === 0 ? (

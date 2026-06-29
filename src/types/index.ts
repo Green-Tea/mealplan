@@ -9,7 +9,7 @@ export interface Ingredient {
 export interface Dish {
   id: string;
   name: string;
-  primaryProteinId: string;
+  proteinIds: string[];
   vegetableIds: string[];
   carbohydrateIds: string[];
   otherIds: string[];

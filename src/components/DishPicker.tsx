@@ -11,12 +11,15 @@ function DraggableDish({ dish, ingredients }: { dish: Dish; ingredients: Ingredi
     ? { transform: `translate(${transform.x}px, ${transform.y}px)`, opacity: isDragging ? 0.5 : 1 }
     : undefined;
 
-  const protein = ingredients.find(i => i.id === dish.primaryProteinId);
+  const proteinNames = dish.proteinIds
+    ?.map(id => ingredients.find(i => i.id === id)?.name)
+    .filter(Boolean)
+    .join(', ');
 
   return (
     <div ref={setNodeRef} style={style} className="dish-chip" {...attributes} {...listeners}>
       <span className="dish-chip-name">{dish.name}</span>
-      {protein && <span className="dish-chip-protein">{protein.name}</span>}
+      {proteinNames && <span className="dish-chip-protein">{proteinNames}</span>}
     </div>
   );
 }

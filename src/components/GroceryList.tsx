@@ -21,7 +21,7 @@ export default function GroceryList({ plan, dishes, ingredients }: Props) {
       const dish = dishes.find(d => d.id === dishId);
       if (!dish) continue;
 
-      proteinCounts.set(dish.primaryProteinId, (proteinCounts.get(dish.primaryProteinId) ?? 0) + 1);
+      dish.proteinIds?.forEach(pid => proteinCounts.set(pid, (proteinCounts.get(pid) ?? 0) + 1));
       dish.vegetableIds.forEach(id => vegSet.add(id));
       dish.carbohydrateIds?.forEach(id => carbSet.add(id));
       dish.otherIds?.forEach(id => otherSet.add(id));
