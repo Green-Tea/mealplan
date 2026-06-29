@@ -23,7 +23,6 @@ interface Props {
   ingredients: Ingredient[];
   mealPlans: MealPlan[];
   onSavePlans: (plans: MealPlan[]) => void;
-  onReload: () => Promise<void>;
 }
 
 function getOrCreatePlan(plans: MealPlan[], weekStart: string): MealPlan {
@@ -35,7 +34,7 @@ function getOrCreatePlan(plans: MealPlan[], weekStart: string): MealPlan {
   };
 }
 
-export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlans, onReload }: Props) {
+export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlans }: Props) {
   const [weekStart, setWeekStart] = useState(getCurrentWeekStart);
   const [showGrocery, setShowGrocery] = useState(false);
   const [showStats, setShowStats] = useState(false);
