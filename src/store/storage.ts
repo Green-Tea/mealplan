@@ -1,48 +1,42 @@
 import type { Ingredient, Dish, MealPlan } from '../types';
 
-const KEYS = {
-  ingredients: 'mealplan_ingredients',
-  dishes: 'mealplan_dishes',
-  mealPlans: 'mealplan_plans',
-} as const;
+const API = '/api';
 
-function load<T>(key: string): T[] {
-  const raw = localStorage.getItem(key);
-  return raw ? JSON.parse(raw) : [];
+export async function loadIngredients(): Promise<Ingredient[]> {
+  const res = await fetch(`${API}/ingredients`);
+  return res.json();
 }
 
-function save<T>(key: string, data: T[]): void {
-  localStorage.setItem(key, JSON.stringify(data));
-}
-
-export function loadIngredients(): Ingredient[] {
-  return load<Ingredient>(KEYS.ingredients);
-}
-
-export function saveIngredients(ingredients: Ingredient[]): void {
-  save(KEYS.ingredients, ingredients);
-}
-
-export function loadDishes(): Dish[] {
-  return load<Dish & { primaryProteinId?: string }>(KEYS.dishes).map(d => {
-    const { primaryProteinId, ...rest } = d;
-    return {
-      ...rest,
-      proteinIds: rest.proteinIds ?? (primaryProteinId ? [primaryProteinId] : []),
-      carbohydrateIds: d.carbohydrateIds ?? [],
-      otherIds: d.otherIds ?? [],
-    };
+export async function saveIngredients(ingredients: Ingredient[]): Promise<void> {
+  await fetch(`${API}/ingredients`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(ingredients),
   });
 }
 
-export function saveDishes(dishes: Dish[]): void {
-  save(KEYS.dishes, dishes);
+export async function loadDishes(): Promise<Dish[]> {
+  const res = await fetch(`${API}/dishes`);
+  return res.json();
 }
 
-export function loadMealPlans(): MealPlan[] {
-  return load<MealPlan>(KEYS.mealPlans);
+export async function saveDishes(dishes: Dish[]): Promise<void> {
+  await fetch(`${API}/dishes`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(dishes),
+  });
 }
 
-export function saveMealPlans(plans: MealPlan[]): void {
-  save(KEYS.mealPlans, plans);
+export async function loadMealPlans(): Promise<MealPlan[]> {
+  const res = await fetch(`${API}/meal-plans`);
+  return res.json();
+}
+
+export async function saveMealPlans(plans: MealPlan[]): Promise<void> {
+  await fetch(`${API}/meal-plans`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(plans),
+  });
 }

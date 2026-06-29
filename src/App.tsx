@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { Ingredient, Dish, MealPlan } from './types';
 import { loadIngredients, saveIngredients, loadDishes, saveDishes, loadMealPlans, saveMealPlans } from './store/storage';
 import IngredientsPage from './pages/IngredientsPage';
@@ -9,9 +9,20 @@ type Page = 'planner' | 'dishes' | 'ingredients';
 
 export default function App() {
   const [page, setPage] = useState<Page>('planner');
-  const [ingredients, setIngredients] = useState<Ingredient[]>(loadIngredients);
-  const [dishes, setDishes] = useState<Dish[]>(loadDishes);
-  const [mealPlans, setMealPlans] = useState<MealPlan[]>(loadMealPlans);
+  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
+  const [dishes, setDishes] = useState<Dish[]>([]);
+  const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([loadIngredients(), loadDishes(), loadMealPlans()])
+      .then(([ing, d, mp]) => {
+        setIngredients(ing);
+        setDishes(d);
+        setMealPlans(mp);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleSaveIngredients = useCallback((next: Ingredient[]) => {
     setIngredients(next);
@@ -27,6 +38,19 @@ export default function App() {
     setMealPlans(next);
     saveMealPlans(next);
   }, []);
+
+  if (loading) {
+    return (
+      <div className="app">
+        <nav className="nav">
+          <div className="nav-brand">Meal Planner</div>
+        </nav>
+        <main className="main">
+          <p className="empty-state">Loading...</p>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="app">
