@@ -91,6 +91,11 @@ export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlan
     }
   }
 
+  function clearWeek() {
+    if (!confirm('Clear all meals planned for this week?')) return;
+    persistPlan({ ...plan, slots: { monday: [], tuesday: [], wednesday: [], thursday: [], friday: [] } });
+  }
+
   function copyPreviousWeek() {
     const prevWeek = addWeeks(weekStart, -1);
     const prevPlan = mealPlans.find(p => p.weekStartDate === prevWeek);
@@ -162,7 +167,7 @@ export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlan
       </div>
 
       {showGrocery && (
-        <GroceryList plan={plan} dishes={dishes} ingredients={ingredients} />
+        <GroceryList plan={plan} dishes={dishes} ingredients={ingredients} onClearList={clearWeek} />
       )}
 
       {showStats && (
