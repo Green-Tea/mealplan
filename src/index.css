@@ -66,6 +66,24 @@ body {
 /* Main */
 .main { max-width: 1100px; margin: 0 auto; padding: 24px; }
 
+/* Page slider */
+.page-viewport {
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.page-track {
+  display: flex;
+  width: 300%;
+  will-change: transform;
+}
+
+.page-slide {
+  width: 33.3333%;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
 .page h2 {
   font-size: 24px;
   font-weight: 700;
