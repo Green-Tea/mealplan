@@ -164,10 +164,12 @@ export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlan
         <button className="btn btn-sm" onClick={() => setShowStats(!showStats)}>
           {showStats ? 'Hide Statistics' : 'Statistics'}
         </button>
+        <div className="spacer" />
+        <button className="btn btn-sm btn-danger" onClick={clearWeek}>Clear List</button>
       </div>
 
       {showGrocery && (
-        <GroceryList plan={plan} dishes={dishes} ingredients={ingredients} onClearList={clearWeek} />
+        <GroceryList plan={plan} dishes={dishes} ingredients={ingredients} />
       )}
 
       {showStats && (
