@@ -28,7 +28,8 @@ CREATE TABLE dish_ingredients (
 CREATE TABLE meal_plans (
   week_start_date TEXT NOT NULL,
   day TEXT NOT NULL CHECK(day IN ('monday', 'tuesday', 'wednesday', 'thursday', 'friday')),
-  dish_id INTEGER,
-  PRIMARY KEY (week_start_date, day),
-  FOREIGN KEY (dish_id) REFERENCES dishes(id) ON DELETE SET NULL
+  dish_id INTEGER NOT NULL,
+  position INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (week_start_date, day, dish_id),
+  FOREIGN KEY (dish_id) REFERENCES dishes(id) ON DELETE CASCADE
 );

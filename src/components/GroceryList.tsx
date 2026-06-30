@@ -16,15 +16,15 @@ export default function GroceryList({ plan, dishes, ingredients }: Props) {
     const otherSet = new Set<number>();
 
     for (const day of WEEKDAYS) {
-      const dishId = plan.slots[day];
-      if (!dishId) continue;
-      const dish = dishes.find(d => d.id === dishId);
-      if (!dish) continue;
+      for (const dishId of plan.slots[day]) {
+        const dish = dishes.find(d => d.id === dishId);
+        if (!dish) continue;
 
-      dish.proteinIds?.forEach(pid => proteinCounts.set(pid, (proteinCounts.get(pid) ?? 0) + 1));
-      dish.vegetableIds.forEach(id => vegSet.add(id));
-      dish.carbohydrateIds?.forEach(id => carbSet.add(id));
-      dish.otherIds?.forEach(id => otherSet.add(id));
+        dish.proteinIds?.forEach(pid => proteinCounts.set(pid, (proteinCounts.get(pid) ?? 0) + 1));
+        dish.vegetableIds.forEach(id => vegSet.add(id));
+        dish.carbohydrateIds?.forEach(id => carbSet.add(id));
+        dish.otherIds?.forEach(id => otherSet.add(id));
+      }
     }
 
     const proteins = Array.from(proteinCounts.entries()).map(([id, count]) => {

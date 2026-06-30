@@ -30,7 +30,7 @@ function getOrCreatePlan(plans: MealPlan[], weekStart: string): MealPlan {
   if (existing) return existing;
   return {
     weekStartDate: weekStart,
-    slots: { monday: null, tuesday: null, wednesday: null, thursday: null, friday: null },
+    slots: { monday: [], tuesday: [], wednesday: [], thursday: [], friday: [] },
   };
 }
 
@@ -58,20 +58,34 @@ export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlan
     saveMealPlan(updated);
   }
 
-  function assignDish(day: Weekday, dishId: number | null) {
-    persistPlan({ ...plan, slots: { ...plan.slots, [day]: dishId } });
+  function addDish(day: Weekday, dishId: number) {
+    if (plan.slots[day].includes(dishId)) return;
+    persistPlan({ ...plan, slots: { ...plan.slots, [day]: [...plan.slots[day], dishId] } });
   }
 
-  function clearDay(day: Weekday) {
-    assignDish(day, null);
+  function removeDish(day: Weekday, dishId: number) {
+    persistPlan({ ...plan, slots: { ...plan.slots, [day]: plan.slots[day].filter(id => id !== dishId) } });
+  }
+
+  function moveDish(fromDay: Weekday, toDay: Weekday, dishId: number) {
+    if (fromDay === toDay) return;
+    const toSlots = plan.slots[toDay].includes(dishId) ? plan.slots[toDay] : [...plan.slots[toDay], dishId];
+    persistPlan({
+      ...plan,
+      slots: {
+        ...plan.slots,
+        [fromDay]: plan.slots[fromDay].filter(id => id !== dishId),
+        [toDay]: toSlots,
+      },
+    });
   }
 
   function duplicateMeal(fromDay: Weekday) {
-    const dishId = plan.slots[fromDay];
-    if (!dishId) return;
-    const emptyDay = WEEKDAYS.find(d => d !== fromDay && !plan.slots[d]);
+    const dishIds = plan.slots[fromDay];
+    if (dishIds.length === 0) return;
+    const emptyDay = WEEKDAYS.find(d => d !== fromDay && plan.slots[d].length === 0);
     if (emptyDay) {
-      assignDish(emptyDay, dishId);
+      persistPlan({ ...plan, slots: { ...plan.slots, [emptyDay]: [...dishIds] } });
     } else {
       alert('No empty slots available to duplicate into.');
     }
@@ -102,20 +116,13 @@ export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlan
       const targetDay = overId as Weekday;
       const dragId = active.id as string;
 
-      const sourceDay = WEEKDAYS.find(d => `planned-${d}` === dragId);
-      if (sourceDay) {
-        const sourceDish = plan.slots[sourceDay];
-        const targetDish = plan.slots[targetDay];
-        persistPlan({
-          ...plan,
-          slots: {
-            ...plan.slots,
-            [sourceDay]: targetDish,
-            [targetDay]: sourceDish,
-          },
-        });
+      const plannedMatch = dragId.match(/^planned-(\w+)-(\d+)$/);
+      if (plannedMatch) {
+        const sourceDay = plannedMatch[1] as Weekday;
+        const dishId = Number(plannedMatch[2]);
+        moveDish(sourceDay, targetDay, dishId);
       } else {
-        assignDish(targetDay, Number(dragId));
+        addDish(targetDay, Number(dragId));
       }
     }
   }
@@ -127,8 +134,8 @@ export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlan
           const direct = dishes.find(d => d.id === numId);
           if (direct) return direct;
         }
-        const day = WEEKDAYS.find(d => `planned-${d}` === activeDishId);
-        if (day && plan.slots[day]) return dishes.find(d => d.id === plan.slots[day]!);
+        const plannedMatch = activeDishId.match(/^planned-(\w+)-(\d+)$/);
+        if (plannedMatch) return dishes.find(d => d.id === Number(plannedMatch[2])) ?? null;
         return null;
       })()
     : null;
@@ -174,9 +181,9 @@ export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlan
               key={day}
               day={day}
               label={WEEKDAY_LABELS[day]}
-              dish={plan.slots[day] ? dishes.find(d => d.id === plan.slots[day]) ?? null : null}
+              dishes={plan.slots[day].map(id => dishes.find(d => d.id === id)).filter((d): d is Dish => Boolean(d))}
               ingredients={ingredients}
-              onClear={() => clearDay(day)}
+              onRemove={dishId => removeDish(day, dishId)}
               onDuplicate={() => duplicateMeal(day)}
             />
           ))}
