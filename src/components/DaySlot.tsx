@@ -1,5 +1,6 @@
 import { useDroppable, useDraggable } from '@dnd-kit/core';
 import type { Dish, Ingredient, Weekday } from '../types';
+import { useIsMobile } from '../utils/useIsMobile';
 
 interface Props {
   day: Weekday;
@@ -46,6 +47,7 @@ function DraggableDishCard({ day, dish, ingredients, onRemove }: {
 
 export default function DaySlot({ day, label, dishes, ingredients, onRemove, onDuplicate, onClear, armed, onTapAdd }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: day });
+  const isMobile = useIsMobile();
 
   return (
     <div
@@ -74,7 +76,7 @@ export default function DaySlot({ day, label, dishes, ingredients, onRemove, onD
             />
           ))
         ) : (
-          <div className="day-slot-empty">Drop a dish here</div>
+          <div className="day-slot-empty">{isMobile ? 'Tap a dish, then tap here' : 'Drop a dish here'}</div>
         )}
       </div>
     </div>
