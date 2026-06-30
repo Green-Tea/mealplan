@@ -39,6 +39,7 @@ export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlan
   const [showGrocery, setShowGrocery] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [activeDishId, setActiveDishId] = useState<string | null>(null);
+  const [armedDishId, setArmedDishId] = useState<number | null>(null);
 
   const plan = useMemo(() => getOrCreatePlan(mealPlans, weekStart), [mealPlans, weekStart]);
 
@@ -69,6 +70,16 @@ export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlan
 
   function clearDay(day: Weekday) {
     persistPlan({ ...plan, slots: { ...plan.slots, [day]: [] } });
+  }
+
+  function toggleArmedDish(dishId: number) {
+    setArmedDishId(current => (current === dishId ? null : dishId));
+  }
+
+  function tapAddToDay(day: Weekday) {
+    if (armedDishId === null) return;
+    addDish(day, armedDishId);
+    setArmedDishId(null);
   }
 
   function moveDish(fromDay: Weekday, toDay: Weekday, dishId: number) {
@@ -197,11 +208,18 @@ export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlan
               onRemove={dishId => removeDish(day, dishId)}
               onDuplicate={() => duplicateMeal(day)}
               onClear={() => clearDay(day)}
+              armed={armedDishId !== null}
+              onTapAdd={() => tapAddToDay(day)}
             />
           ))}
         </div>
 
-        <DishPicker dishes={dishes} ingredients={ingredients} />
+        <DishPicker
+          dishes={dishes}
+          ingredients={ingredients}
+          armedDishId={armedDishId}
+          onArmDish={toggleArmedDish}
+        />
 
         <DragOverlay>
           {resolvedActiveDish ? (
