@@ -498,6 +498,23 @@ body {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.grocery-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.grocery-past-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
 }
 
 .grocery-days {

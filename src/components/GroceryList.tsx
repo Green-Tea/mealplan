@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { Dish, Ingredient, MealPlan } from '../types';
 import { WEEKDAYS, WEEKDAY_LABELS } from '../types';
+import { addDays, getToday } from '../utils/dates';
 
 interface Props {
   plan: MealPlan;
@@ -21,9 +22,17 @@ function buildSection(entries: Entry[]) {
 
 export default function GroceryList({ plan, dishes, ingredients }: Props) {
   const [byDay, setByDay] = useState(false);
+  const [includePastDays, setIncludePastDays] = useState(false);
+
+  const today = getToday();
+  const hasPastDays = WEEKDAYS.some((_, i) => addDays(plan.weekStartDate, i) < today);
 
   const dayGroups = useMemo(() => {
-    return WEEKDAYS.map(day => {
+    const relevantDays = includePastDays
+      ? WEEKDAYS
+      : WEEKDAYS.filter((_, i) => addDays(plan.weekStartDate, i) >= today);
+
+    return relevantDays.map(day => {
       const proteinCounts = new Map<number, number>();
       const vegCounts = new Map<number, number>();
       const carbCounts = new Map<number, number>();
@@ -53,7 +62,7 @@ export default function GroceryList({ plan, dishes, ingredients }: Props) {
         others: toEntries(otherCounts),
       };
     }).filter(g => g.proteins.length > 0 || g.vegetables.length > 0 || g.carbohydrates.length > 0 || g.others.length > 0);
-  }, [plan, dishes, ingredients]);
+  }, [plan, dishes, ingredients, includePastDays, today]);
 
   const { proteins, vegetables, carbohydrates, others } = useMemo(() => {
     const merge = (key: 'proteins' | 'vegetables' | 'carbohydrates' | 'others') => {
@@ -76,7 +85,14 @@ export default function GroceryList({ plan, dishes, ingredients }: Props) {
     return (
       <div className="grocery-list">
         <h3>Grocery List</h3>
-        <p className="empty-state">No meals planned this week.</p>
+        <p className="empty-state">
+          {hasPastDays && !includePastDays
+            ? 'No remaining meals planned this week.'
+            : 'No meals planned this week.'}
+        </p>
+        {hasPastDays && !includePastDays && (
+          <button className="btn btn-sm" onClick={() => setIncludePastDays(true)}>Show past days too</button>
+        )}
       </div>
     );
   }
@@ -99,9 +115,21 @@ export default function GroceryList({ plan, dishes, ingredients }: Props) {
     <div className="grocery-list">
       <div className="grocery-list-header">
         <h3>Grocery List</h3>
-        <button className="btn btn-sm" onClick={() => setByDay(v => !v)}>
-          {byDay ? 'View Aggregate' : 'View by Day'}
-        </button>
+        <div className="grocery-list-actions">
+          {hasPastDays && (
+            <label className="grocery-past-toggle">
+              <input
+                type="checkbox"
+                checked={includePastDays}
+                onChange={e => setIncludePastDays(e.target.checked)}
+              />
+              Include past days
+            </label>
+          )}
+          <button className="btn btn-sm" onClick={() => setByDay(v => !v)}>
+            {byDay ? 'View Aggregate' : 'View by Day'}
+          </button>
+        </div>
       </div>
       {byDay ? (
         <div className="grocery-days">
