@@ -67,6 +67,10 @@ export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlan
     persistPlan({ ...plan, slots: { ...plan.slots, [day]: plan.slots[day].filter(id => id !== dishId) } });
   }
 
+  function clearDay(day: Weekday) {
+    persistPlan({ ...plan, slots: { ...plan.slots, [day]: [] } });
+  }
+
   function moveDish(fromDay: Weekday, toDay: Weekday, dishId: number) {
     if (fromDay === toDay) return;
     const toSlots = plan.slots[toDay].includes(dishId) ? plan.slots[toDay] : [...plan.slots[toDay], dishId];
@@ -192,6 +196,7 @@ export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlan
               ingredients={ingredients}
               onRemove={dishId => removeDish(day, dishId)}
               onDuplicate={() => duplicateMeal(day)}
+              onClear={() => clearDay(day)}
             />
           ))}
         </div>
