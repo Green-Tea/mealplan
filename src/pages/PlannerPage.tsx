@@ -182,14 +182,14 @@ export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlan
           ))}
         </div>
 
+        <DishPicker dishes={dishes} ingredients={ingredients} />
+
         <DragOverlay>
           {resolvedActiveDish ? (
             <div className="dish-chip dragging">{resolvedActiveDish.name}</div>
           ) : null}
         </DragOverlay>
       </DndContext>
-
-      <DishPicker dishes={dishes} ingredients={ingredients} />
     </div>
   );
 }
