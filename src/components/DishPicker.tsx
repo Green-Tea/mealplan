@@ -4,7 +4,7 @@ import type { Dish, Ingredient } from '../types';
 
 function DraggableDish({ dish, ingredients }: { dish: Dish; ingredients: Ingredient[] }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: dish.id,
+    id: String(dish.id),
   });
 
   const style = transform
