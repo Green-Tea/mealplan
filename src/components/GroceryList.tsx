@@ -7,7 +7,6 @@ interface Props {
   plan: MealPlan;
   dishes: Dish[];
   ingredients: Ingredient[];
-  onClearList?: () => void;
 }
 
 interface Entry {
@@ -21,7 +20,7 @@ function buildSection(entries: Entry[]) {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-export default function GroceryList({ plan, dishes, ingredients, onClearList }: Props) {
+export default function GroceryList({ plan, dishes, ingredients }: Props) {
   const [byDay, setByDay] = useState(false);
   const [includePastDays, setIncludePastDays] = useState(false);
 
@@ -130,9 +129,6 @@ export default function GroceryList({ plan, dishes, ingredients, onClearList }: 
           <button className="btn btn-sm" onClick={() => setByDay(v => !v)}>
             {byDay ? 'View Aggregate' : 'View by Day'}
           </button>
-          {onClearList && (
-            <button className="btn btn-sm btn-danger" onClick={onClearList}>Clear List</button>
-          )}
         </div>
       </div>
       {byDay ? (

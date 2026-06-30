@@ -346,6 +346,10 @@ body {
   flex-wrap: wrap;
 }
 
+.planner-actions .spacer {
+  flex: 1;
+}
+
 .planner-board {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
