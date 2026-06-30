@@ -26,17 +26,18 @@ export default function Statistics({ mealPlans, dishes, ingredients }: Props) {
 
     for (const plan of sortedPlans) {
       for (let i = 0; i < WEEKDAYS.length; i++) {
-        const dishId = plan.slots[WEEKDAYS[i]];
-        if (!dishId) continue;
+        const dishIds = plan.slots[WEEKDAYS[i]];
 
         const mealDate = new Date(plan.weekStartDate + 'T00:00:00');
         mealDate.setDate(mealDate.getDate() + i);
         const dateStr = mealDate.toISOString().split('T')[0];
 
-        const entry = dishStats.get(dishId) ?? { lastDate: '', countThisYear: 0 };
-        if (dateStr > entry.lastDate) entry.lastDate = dateStr;
-        if (dateStr >= yearStart) entry.countThisYear++;
-        dishStats.set(dishId, entry);
+        for (const dishId of dishIds) {
+          const entry = dishStats.get(dishId) ?? { lastDate: '', countThisYear: 0 };
+          if (dateStr > entry.lastDate) entry.lastDate = dateStr;
+          if (dateStr >= yearStart) entry.countThisYear++;
+          dishStats.set(dishId, entry);
+        }
       }
     }
 
