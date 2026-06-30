@@ -8,6 +8,7 @@ interface Props {
   ingredients: Ingredient[];
   onRemove: (dishId: number) => void;
   onDuplicate: () => void;
+  onClear: () => void;
 }
 
 function DraggableDishCard({ day, dish, ingredients, onRemove }: {
@@ -41,7 +42,7 @@ function DraggableDishCard({ day, dish, ingredients, onRemove }: {
   );
 }
 
-export default function DaySlot({ day, label, dishes, ingredients, onRemove, onDuplicate }: Props) {
+export default function DaySlot({ day, label, dishes, ingredients, onRemove, onDuplicate, onClear }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: day });
 
   return (
@@ -51,9 +52,12 @@ export default function DaySlot({ day, label, dishes, ingredients, onRemove, onD
     >
       <div className="day-slot-header">
         {label}
-        {dishes.length > 0 && (
-          <button className="btn btn-xs btn-ghost" onClick={onDuplicate} title="Duplicate to another day">⧉</button>
-        )}
+        <div className="day-slot-header-actions">
+          {dishes.length > 0 && (
+            <button className="btn btn-xs btn-ghost" onClick={onDuplicate} title="Duplicate to another day">⧉</button>
+          )}
+          <button className="btn btn-xs btn-danger" onClick={onClear} title="Clear day">Clear</button>
+        </div>
       </div>
       <div className="day-slot-content">
         {dishes.length > 0 ? (
