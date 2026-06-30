@@ -12,6 +12,7 @@ import {
 import type { Dish, Ingredient, MealPlan, Weekday } from '../types';
 import { WEEKDAYS, WEEKDAY_LABELS } from '../types';
 import { addWeeks, formatWeekRange, getCurrentWeekStart } from '../utils/dates';
+import { useIsMobile } from '../utils/useIsMobile';
 import { saveMealPlan } from '../store/storage';
 import DaySlot from '../components/DaySlot';
 import DishPicker from '../components/DishPicker';
@@ -43,9 +44,9 @@ export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlan
 
   const plan = useMemo(() => getOrCreatePlan(mealPlans, weekStart), [mealPlans, weekStart]);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
-  );
+  const isMobile = useIsMobile();
+  const pointerSensor = useSensor(PointerSensor, { activationConstraint: { distance: 5 } });
+  const sensors = useSensors(...(isMobile ? [] : [pointerSensor]));
 
   function persistPlan(updated: MealPlan) {
     const idx = mealPlans.findIndex(p => p.weekStartDate === updated.weekStartDate);
