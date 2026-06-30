@@ -88,8 +88,9 @@ export default function App() {
     );
   }
 
+  const slidePercent = 100 / PAGES.length;
   const trackStyle = {
-    transform: `translateX(calc(${-pageIndex * 100}% + ${dragOffset}px))`,
+    transform: `translateX(calc(${-pageIndex * slidePercent}% + ${dragOffset}px))`,
     transition: dragging ? 'none' : 'transform 0.3s ease',
   };
 
