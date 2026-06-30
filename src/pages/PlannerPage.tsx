@@ -172,9 +172,9 @@ export default function PlannerPage({ dishes, ingredients, mealPlans, onSavePlan
       </div>
 
       <div className="planner-actions">
-        <button className="btn btn-sm" onClick={copyPreviousWeek}>Copy Previous Week</button>
+        <button className="btn btn-sm" onClick={copyPreviousWeek}>Copy Last Week</button>
         <button className="btn btn-sm" onClick={() => setShowGrocery(!showGrocery)}>
-          {showGrocery ? 'Hide Grocery List' : 'Generate Grocery List'}
+          {showGrocery ? 'Hide List' : 'Grocery List'}
         </button>
         <button className="btn btn-sm" onClick={() => setShowStats(!showStats)}>
           {showStats ? 'Hide Statistics' : 'Statistics'}
