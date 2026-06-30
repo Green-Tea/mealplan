@@ -24,6 +24,16 @@ export function getCurrentWeekStart(): string {
   return formatDate(getMonday(new Date()));
 }
 
+export function addDays(weekStart: string, days: number): string {
+  const d = new Date(weekStart + 'T00:00:00');
+  d.setDate(d.getDate() + days);
+  return formatDate(d);
+}
+
+export function getToday(): string {
+  return formatDate(new Date());
+}
+
 export function formatWeekRange(weekStart: string): string {
   const start = new Date(weekStart + 'T00:00:00');
   const end = new Date(start);
