@@ -373,6 +373,11 @@ body {
 
 .day-slot-over { border-color: var(--primary); background: var(--primary-light); }
 
+.day-slot-armable {
+  border-color: var(--primary);
+  cursor: pointer;
+}
+
 .day-slot-header {
   font-weight: 600;
   font-size: 13px;
@@ -489,6 +494,18 @@ body {
   box-shadow: var(--shadow-md);
   border-color: var(--primary);
   opacity: 0.9;
+}
+
+.dish-chip.armed {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  box-shadow: var(--shadow-md);
+}
+
+.dish-picker-hint {
+  font-size: 13px;
+  color: var(--primary);
+  margin: -4px 0 8px;
 }
 
 .dish-chip-name { font-weight: 600; font-size: 14px; }
@@ -746,9 +763,7 @@ body {
   }
 
   .planner-actions .btn {
-    flex: 1;
     justify-content: center;
-    min-width: 0;
     font-size: 13px;
   }
 

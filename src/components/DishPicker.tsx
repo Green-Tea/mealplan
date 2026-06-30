@@ -2,7 +2,12 @@ import { useState, useMemo } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import type { Dish, Ingredient } from '../types';
 
-function DraggableDish({ dish, ingredients }: { dish: Dish; ingredients: Ingredient[] }) {
+function DraggableDish({ dish, ingredients, armed, onTap }: {
+  dish: Dish;
+  ingredients: Ingredient[];
+  armed: boolean;
+  onTap: () => void;
+}) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: String(dish.id),
   });
@@ -17,14 +22,28 @@ function DraggableDish({ dish, ingredients }: { dish: Dish; ingredients: Ingredi
     .join(', ');
 
   return (
-    <div ref={setNodeRef} style={style} className="dish-chip" {...attributes} {...listeners}>
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`dish-chip ${armed ? 'armed' : ''}`}
+      onClick={onTap}
+      {...attributes}
+      {...listeners}
+    >
       <span className="dish-chip-name">{dish.name}</span>
       {proteinNames && <span className="dish-chip-protein">{proteinNames}</span>}
     </div>
   );
 }
 
-export default function DishPicker({ dishes, ingredients }: { dishes: Dish[]; ingredients: Ingredient[] }) {
+interface DishPickerProps {
+  dishes: Dish[];
+  ingredients: Ingredient[];
+  armedDishId: number | null;
+  onArmDish: (dishId: number) => void;
+}
+
+export default function DishPicker({ dishes, ingredients, armedDishId, onArmDish }: DishPickerProps) {
   const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {
@@ -42,9 +61,18 @@ export default function DishPicker({ dishes, ingredients }: { dishes: Dish[]; in
         value={search}
         onChange={e => setSearch(e.target.value)}
       />
+      {armedDishId !== null && (
+        <p className="dish-picker-hint">Tap a day to add it, or tap the dish again to cancel.</p>
+      )}
       <div className="dish-picker-list">
         {filtered.map(dish => (
-          <DraggableDish key={dish.id} dish={dish} ingredients={ingredients} />
+          <DraggableDish
+            key={dish.id}
+            dish={dish}
+            ingredients={ingredients}
+            armed={armedDishId === dish.id}
+            onTap={() => onArmDish(dish.id)}
+          />
         ))}
         {filtered.length === 0 && <p className="empty-state">No dishes available. Create some on the Dishes page.</p>}
       </div>
